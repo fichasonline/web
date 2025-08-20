@@ -40,14 +40,14 @@ export function ServiceCard({
       {/* Borde animado (aparece al hover) */}
       <div className="absolute -inset-[1px] rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-[radial-gradient(120px_60px_at_20%_0%,rgba(139,92,246,0.25),transparent_70%)]" />
 
-      <div className="group relative rounded-2xl border border-neutral-200 bg-white p-6 lg:p-7 shadow-sm hover:shadow-md transition-all">
+      <div className="group relative rounded-2xl border border-neutral-200 bg-white p-6 lg:p-7 shadow-sm hover:shadow-md transition-all text-center">
         {/* Halo superior según color */}
         <div
           className={`pointer-events-none absolute -top-10 left-1/2 h-20 w-40 -translate-x-1/2 rounded-full bg-gradient-to-b ${colorRing[service.color]} blur-2xl`}
           aria-hidden
         />
 
-        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-5 border ${badge[service.color]}`}>
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-5 border ${badge[service.color]} mx-auto`}>
           <Icon className="w-7 h-7" />
         </div>
 
@@ -58,7 +58,7 @@ export function ServiceCard({
           {service.description}
         </p>
 
-        <ul className="space-y-2 mb-5">
+        <ul className="space-y-2 mb-5 text-left inline-block mx-auto">
           {service.features.map((f, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-neutral-600">
               <span className="block w-1.5 h-1.5 rounded-full bg-purple-600" />

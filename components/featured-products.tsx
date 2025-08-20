@@ -41,14 +41,14 @@ const featuredServices = [
 
 export function FeaturedProducts() {
   return (
-    <section className="py-20 lg:py-32 " id="servicios">
+    <section className="py-20 lg:py-32" id="servicios">
       <div className="container-custom">
         <Reveal>
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-6xl font-display font-bold text-neutral-900 mb-4">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-neutral-900 mb-4">
               Nuestros <span className="italic font-light text-purple-600">Servicios</span>
             </h2>
-            <p className="text-lg text-neutral-600 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg text-neutral-600 max-w-3xl mx-auto">
               Ofrecemos una gama completa de servicios para intercambios digitales seguros y eficientes
             </p>
           </div>
@@ -71,6 +71,7 @@ export function FeaturedProducts() {
           {featuredServices.map((service, index) => (
             <motion.div
               key={service.id}
+              className="will-change-[transform,opacity]"
               variants={{
                 hidden: { opacity: 0, y: 30 },
                 visible: {

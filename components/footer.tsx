@@ -14,7 +14,6 @@ export function Footer() {
     { name: "Facebook", icon: Facebook, href: "#" },
   ] as const
 
-  // Fondo parallax
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end end"] })
   const bgY = useTransform(scrollYProgress, [0, 1], [-16, 8])
@@ -22,19 +21,16 @@ export function Footer() {
   return (
     <footer
       ref={ref}
-      className="h-[600px] relative isolate overflow-hidden bg-neutral-950 text-neutral-200 flex flex-col"
+      className="relative isolate overflow-hidden bg-neutral-950 text-neutral-200 flex flex-col pt-24 sm:pt-32"
     >
-      {/* Halo degradado */}
       <motion.div
         aria-hidden
         style={{ y: bgY }}
         className="absolute -top-40 left-1/2 -translate-x-1/2 -z-10 h-[360px] w-[980px] rounded-full
-                   bg-[radial-gradient(closest-side,rgba(139,92,246,0.18),rgba(88,28,135,0.08)_50%,transparent_70%)] blur-3xl"
+                   bg-[radial-gradient(closest-side,rgba(139,92,246,0.18),rgba(88,28,135,0.08)_50%,transparent_70%)] blur-3xl will-change-transform"
       />
 
-      {/* Contenido principal centrado */}
       <div className="flex flex-1 flex-col items-center justify-center text-center px-6">
-        {/* Logo + descripción */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,7 +52,6 @@ export function Footer() {
           </p>
         </motion.div>
 
-        {/* Redes */}
         <div className="flex justify-center items-center gap-3 mb-10">
           {socialLinks.map((s) => (
             <motion.a
@@ -76,7 +71,6 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Newsletter */}
         <motion.form
           onSubmit={(e) => e.preventDefault()}
           initial={{ opacity: 0, y: 16 }}
@@ -101,17 +95,16 @@ export function Footer() {
         </motion.form>
       </div>
 
-      {/* Legal pegado al fondo */}
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         viewport={{ once: true }}
-        className="mt-auto border-t border-white/10 py-6"
+        className="mt-20 border-t border-white/10 py-6"
       >
-        <div className="flex flex-col items-center justify-center gap-4 text-center text-xs text-neutral-400">
+        <div className="container-custom flex flex-col items-center justify-center gap-4 text-center text-xs text-neutral-400 sm:flex-row sm:justify-between">
           <p>© {currentYear} Finex. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
             <a href="#" className="hover:text-neutral-200 transition-colors">Política de Privacidad</a>
             <a href="#" className="hover:text-neutral-200 transition-colors">Términos de Servicio</a>
             <a href="#" className="hover:text-neutral-200 transition-colors">Cookies</a>

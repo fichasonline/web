@@ -215,7 +215,13 @@
   .container-custom {
     max-width: 1320px;
     margin: 0 auto;
-    padding: 0 var(--space-6);
+    padding: 0 1.5rem; /* 24px */
+  }
+
+  @media (min-width: 768px) {
+    .container-custom {
+      padding: 0 2.5rem; /* 40px */
+    }
   }
 
   .glass-panel {

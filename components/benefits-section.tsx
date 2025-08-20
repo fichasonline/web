@@ -29,7 +29,7 @@ export function BenefitsSection() {
   ]
 
   return (
-    <section id="beneficios" className="py-24 bg-gradient-to-br from-purple-50 to-neutral-50 relative overflow-hidden">
+    <section id="beneficios" className="py-20 md:py-24 bg-gradient-to-br from-purple-50 to-neutral-50 relative overflow-hidden">
       <div className="absolute top-10 right-10 w-32 h-32 opacity-5">
         <Image
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo.finex-CgwjTwjZjIwuFfYNr3HsxwQhXFKSnJ.png"
@@ -50,21 +50,21 @@ export function BenefitsSection() {
       </div>
 
       <div className="container-custom relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 md:mb-16">
           <Reveal>
-            <h2 className="text-4xl font-display font-bold text-neutral-900 mb-4">¿Por qué elegirnos?</h2>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-neutral-900 mb-4">¿Por qué elegirnos?</h2>
           </Reveal>
           <Reveal delay={0.2}>
-            <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto">
               Nuestros beneficios que nos distinguen en el mercado de intercambios digitales
             </p>
           </Reveal>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 ]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {benefits.map((benefit, index) => (
             <Reveal key={benefit.title} delay={index * 0.1}>
-              <Card className=" md:h-[350px] p-8 text-center hover:shadow-lg transition-all duration-300 bg-white border-neutral-200">
+              <Card className="md:min-h-[350px] p-8 text-center hover:shadow-lg transition-all duration-300 bg-white border-neutral-200">
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <benefit.icon className="w-8 h-8 text-purple-600" />
                 </div>
