@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,10 +29,11 @@ const STEPS = [
   { id: 6, name: 'Confirmación', description: 'Revisa tu pedido' },
 ];
 
-export default function OrdenPage() {
+// Componente interno que usa useSearchParams
+function OrdenForm() {
   const searchParams = useSearchParams();
   const whatsappRef = searchParams.get('ref'); // Captura el ref de WhatsApp
-
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pedidoCreado, setPedidoCreado] = useState<any>(null);
@@ -567,5 +568,20 @@ export default function OrdenPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+// Export default con Suspense para evitar error de build
+export default function OrdenPage() {
+  return (
+    <Suspense fallback={
+      <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-purple-950 via-indigo-950 to-neutral-900">
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 animate-spin text-white" />
+        </div>
+      </main>
+    }>
+      <OrdenForm />
+    </Suspense>
   );
 }
