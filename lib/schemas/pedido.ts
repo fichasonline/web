@@ -30,6 +30,7 @@ export const pedidoFormSchema = z.object({
     .finite("El monto debe ser un número válido")
     .max(1000000, "El monto no puede exceder 1,000,000"),
   currency: z.string().default('USD'),
+  comprobante_url: z.string().url("URL de comprobante inválida").optional().or(z.literal('')),
   details: pedidoDetailsSchema
 });
 
@@ -43,6 +44,7 @@ export const defaultPedidoValues: PedidoFormData = {
   platform: "",
   amount: 0,
   currency: "USD",
+  comprobante_url: "",
   details: {
     email: "",
     payment_method: "BANCO",

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, Suspense } from 'react';
+import { ChangeEvent, useMemo, useRef, useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,7 +15,7 @@ import {
   PLATFORMS,
   type PedidoFormData,
 } from '@/lib/schemas/pedido';
-import { Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Loader2, UploadCloud, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/header';
 import { BlurPanel } from '@/components/blur-panel';
@@ -29,6 +29,9 @@ const STEPS = [
   { id: 6, name: 'Confirmación', description: 'Revisa tu pedido' },
 ];
 
+const QUICK_AMOUNTS = [10, 50, 100];
+const COMPROBANTE_BUCKET = 'orden_comprobantes';
+
 // Componente interno que usa useSearchParams
 function OrdenForm() {
   const searchParams = useSearchParams();
@@ -38,6 +41,10 @@ function OrdenForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pedidoCreado, setPedidoCreado] = useState<any>(null);
+  const [comprobanteFile, setComprobanteFile] = useState<File | null>(null);
+  const [isUploadingComprobante, setIsUploadingComprobante] = useState(false);
+  const [comprobanteError, setComprobanteError] = useState<string | null>(null);
+  const comprobanteInputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     register,
@@ -62,11 +69,76 @@ function OrdenForm() {
     if (currentStep > 1) setCurrentStep((prev) => prev - 1);
   };
 
+  const handleComprobanteChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setComprobanteError(null);
+    const file = event.target.files?.[0] ?? null;
+
+    if (!file) {
+      setComprobanteFile(null);
+      setValue('comprobante_url', '', { shouldDirty: true, shouldValidate: true });
+      if (event.target) {
+        event.target.value = '';
+      }
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      setComprobanteError('El archivo no puede superar los 10 MB.');
+      if (event.target) {
+        event.target.value = '';
+      }
+      return;
+    }
+
+    setComprobanteFile(file);
+    if (event.target) {
+      event.target.value = '';
+    }
+  };
+
+  const clearComprobante = () => {
+    setComprobanteFile(null);
+    setComprobanteError(null);
+    setValue('comprobante_url', '', { shouldDirty: true, shouldValidate: true });
+    if (comprobanteInputRef.current) {
+      comprobanteInputRef.current.value = '';
+    }
+  };
+
   const onSubmit = async (data: PedidoFormData) => {
     setIsSubmitting(true);
 
     try {
       const idempotencyKey = uuidv4();
+      let comprobanteUrl = data.comprobante_url || '';
+
+      if (comprobanteFile) {
+        setIsUploadingComprobante(true);
+        const fileExtension = comprobanteFile.name.split('.').pop()?.toLowerCase() || 'dat';
+        const fileName = `${uuidv4()}.${fileExtension}`;
+        const filePath = `pedidos/${sessionId ?? 'anon'}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(COMPROBANTE_BUCKET)
+          .upload(filePath, comprobanteFile, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast.error('No se pudo subir el comprobante. Inténtalo nuevamente.');
+          return;
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from(COMPROBANTE_BUCKET)
+          .getPublicUrl(filePath);
+
+        comprobanteUrl = publicUrlData.publicUrl;
+        setValue('comprobante_url', comprobanteUrl, { shouldDirty: true, shouldValidate: true });
+      }
 
       const payload = {
         ...data,
@@ -76,6 +148,7 @@ function OrdenForm() {
           ...data.details,
           whatsapp_ref: whatsappRef, // Agregar referencia de WhatsApp
         },
+        comprobante_url: comprobanteUrl || null,
         status: 'pendiente',
       };
 
@@ -96,10 +169,12 @@ function OrdenForm() {
 
       setPedidoCreado(result);
       toast.success('¡Pedido creado exitosamente!');
+      setComprobanteFile(null);
     } catch (error: any) {
       console.error('Error:', error);
       toast.error('Error al crear el pedido');
     } finally {
+      setIsUploadingComprobante(false);
       setIsSubmitting(false);
     }
   };
@@ -191,44 +266,6 @@ function OrdenForm() {
           </div>
         </BlurPanel>
 
-        <div className="mb-8 hidden md:block">
-          <BlurPanel className="w-full rounded-3xl border border-white/10 bg-white/5 px-5 py-6 text-white shadow-2xl">
-            <div className="flex items-center gap-4">
-              {STEPS.map((step, index) => {
-                const isCompleted = currentStep > step.id;
-                const isActive = currentStep === step.id;
-
-                return (
-                  <div key={step.id} className="flex flex-1 items-center gap-4">
-                    <div
-                      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
-                        isCompleted
-                          ? 'border-[#10B981] bg-[#10B981] text-white'
-                          : isActive
-                          ? 'border-[#0B5FFF] bg-[#0B5FFF] text-white ring-2 ring-[#0B5FFF]/20'
-                          : 'border-white/30 bg-white/5 text-white/70'
-                      }`}
-                    >
-                      {isCompleted ? <Check className="h-5 w-5" /> : step.id}
-                    </div>
-                    <div className="flex flex-1 flex-col">
-                      <span className="text-sm font-semibold text-white">{step.name}</span>
-                      <span className="text-xs text-white/60">{step.description}</span>
-                    </div>
-                    {index < STEPS.length - 1 && (
-                      <div
-                        className={`hidden h-px flex-1 md:block ${
-                          currentStep > step.id ? 'bg-gradient-to-r from-[#10B981]/70 to-[#0B5FFF]/70' : 'bg-white/20'
-                        }`}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </BlurPanel>
-        </div>
-
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="min-h-[400px] rounded-3xl border border-white/10 bg-white/5 px-5 py-7 text-white shadow-2xl backdrop-blur md:px-10 md:py-8">
             {currentStep === 1 && (
@@ -286,7 +323,10 @@ function OrdenForm() {
                     <button
                       key={platform.value}
                       type="button"
-                      onClick={() => setValue('platform', platform.value)}
+                      onClick={() => {
+                        setValue('platform', platform.value, { shouldValidate: true, shouldDirty: true });
+                        nextStep();
+                      }}
                       className={`flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
                         formData.platform === platform.value
                           ? 'border-[#10B981] bg-[#10B981]/15 shadow-lg shadow-[#10B981]/15 ring-2 ring-[#10B981]/20'
@@ -325,14 +365,32 @@ function OrdenForm() {
                       $
                     </span>
                     <input
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
                       {...register('amount')}
                       className="w-full rounded-2xl border-none bg-transparent py-5 pl-12 pr-4 text-3xl font-semibold font-tabular text-white focus:outline-none focus:ring-0"
                       placeholder="0.00"
                     />
                   </div>
                   {errors.amount && <p className="mt-2 text-sm text-[#EF4444]">{errors.amount.message}</p>}
+                  <div className="mt-4 flex flex-wrap justify-center gap-3">
+                    {QUICK_AMOUNTS.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() =>
+                          setValue('amount', option, { shouldDirty: true, shouldValidate: true })
+                        }
+                        className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${
+                          formData.amount === option
+                            ? 'border-[#10B981] bg-[#10B981]/20 text-white'
+                            : 'border-white/20 bg-white/5 text-white/80 hover:border-[#0B5FFF]/40 hover:bg-white/10'
+                        }`}
+                      >
+                        ${option}
+                      </button>
+                    ))}
+                  </div>
                   <p className="mt-3 text-sm text-white/70">Ingresa el monto que deseas {formData.operation}</p>
                 </div>
               </div>
@@ -378,6 +436,71 @@ function OrdenForm() {
                     placeholder="Usuario de plataforma, cuenta bancaria, etc."
                     className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-[#0B5FFF] focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]/20"
                   />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white/80">Adjuntar comprobante (opcional)</label>
+                  <div className="flex flex-col gap-3 rounded-2xl border-2 border-dashed border-white/15 bg-white/5 p-4">
+                    <div className="flex items-center gap-3">
+                      <label
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]/40"
+                      >
+                        <UploadCloud className="h-4 w-4" />
+                        Seleccionar archivo
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          ref={comprobanteInputRef}
+                          onChange={handleComprobanteChange}
+                          disabled={isSubmitting || isUploadingComprobante}
+                          className="hidden"
+                        />
+                      </label>
+                      {(isSubmitting || isUploadingComprobante) && (
+                        <span className="flex items-center gap-2 text-xs text-white/70">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Procesando comprobante...
+                        </span>
+                      )}
+                    </div>
+
+                    {comprobanteFile && (
+                      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white/80">
+                        <div className="flex flex-1 items-center gap-2 overflow-hidden">
+                          <span className="truncate">{comprobanteFile.name}</span>
+                          <span className="text-xs text-white/60">
+                            {(comprobanteFile.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={clearComprobante}
+                          className="ml-3 rounded-full border border-white/20 p-1 text-white/70 transition-colors hover:border-[#EF4444]/40 hover:text-[#EF4444]"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    {formData.comprobante_url && !comprobanteFile && (
+                      <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-xs text-white/70">
+                        Comprobante cargado:{" "}
+                        <a
+                          href={formData.comprobante_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#0B5FFF] underline"
+                        >
+                          Ver archivo
+                        </a>
+                      </div>
+                    )}
+
+                    {comprobanteError && (
+                      <p className="text-sm text-[#EF4444]">{comprobanteError}</p>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-white/60">Formatos permitidos: imágenes o PDF. Máximo 10 MB.</p>
                 </div>
               </div>
             )}
@@ -477,6 +600,19 @@ function OrdenForm() {
                       <div className="col-span-2">
                         <p className="text-sm text-white/60">Notas</p>
                         <p className="text-sm text-white/80">{formData.details.notes}</p>
+                      </div>
+                    )}
+                    {formData.comprobante_url && (
+                      <div className="col-span-2">
+                        <p className="text-sm text-white/60">Comprobante</p>
+                        <a
+                          href={formData.comprobante_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-semibold text-[#0B5FFF] underline"
+                        >
+                          Ver archivo
+                        </a>
                       </div>
                     )}
                   </div>
