@@ -76,6 +76,12 @@
   --font-sans: var(--font-inter);
   --font-display: var(--font-poppins);
 
+  /* Fintech color system */
+  --color-primary: #0B5FFF;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  
   /* Updated color system for Finex branding with purple accent */
   --color-neutral-50: #fafafa;
   --color-neutral-900: #0b0b0b;
@@ -210,6 +216,11 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+  }
+
+  /* Fintech numbers - tabular/monospaced */
+  .font-tabular {
+    font-variant-numeric: tabular-nums;
   }
 
   .container-custom {

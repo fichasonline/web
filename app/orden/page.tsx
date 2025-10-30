@@ -33,6 +33,7 @@ const STEPS = [
 function OrdenForm() {
   const searchParams = useSearchParams();
   const whatsappRef = searchParams.get('ref'); // Captura el ref de WhatsApp
+  const sessionId = searchParams.get('session'); // Captura el session_id
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,6 +71,7 @@ function OrdenForm() {
       const payload = {
         ...data,
         idempotency_key: idempotencyKey,
+        session_id: sessionId, // Agregar session_id
         details: {
           ...data.details,
           whatsapp_ref: whatsappRef, // Agregar referencia de WhatsApp
@@ -116,18 +118,18 @@ function OrdenForm() {
         <Header />
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 pt-28 pb-20 lg:pt-32">
           <BlurPanel className="w-full rounded-3xl border border-white/10 bg-white/5 px-6 py-10 text-white shadow-2xl">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20">
-              <Check className="h-10 w-10 text-emerald-300" />
-            </div>
-            <h1 className="mt-6 text-center text-3xl font-semibold md:text-4xl">¡Pedido confirmado!</h1>
-            <p className="mt-2 text-center text-sm text-white/70">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#10B981]/20">
+                <Check className="h-10 w-10 text-[#10B981]" />
+              </div>
+              <h1 className="mt-6 text-center text-3xl font-semibold md:text-4xl">¡Pedido confirmado!</h1>
+              <p className="mt-2 text-center text-sm text-white/70">
               Ya recibimos tu solicitud. En breve nos pondremos en contacto para coordinar los próximos pasos.
             </p>
             <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
               <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                 <div>
                   <span className="text-white/60">ID de pedido</span>
-                  <p className="font-mono text-lg font-semibold text-emerald-200">
+                  <p className="font-mono text-lg font-semibold font-tabular text-[#10B981]">
                     {pedidoCreado.id.slice(0, 8)}
                   </p>
                 </div>
@@ -141,8 +143,8 @@ function OrdenForm() {
                 </div>
                 <div>
                   <span className="text-white/60">Monto</span>
-                  <p className="font-semibold text-white">
-                    {pedidoCreado.amount} {pedidoCreado.currency}
+                  <p className="font-semibold font-tabular text-white">
+                    ${pedidoCreado.amount} {pedidoCreado.currency}
                   </p>
                 </div>
               </div>
@@ -152,7 +154,7 @@ function OrdenForm() {
               onClick={() => {
                 window.location.href = '/';
               }}
-              className="mt-8 inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-transform hover:-translate-y-0.5"
+              className="mt-8 inline-flex items-center justify-center rounded-2xl bg-[#0B5FFF] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#0B5FFF]/30 transition-all hover:bg-[#0B5FFF]/90 focus:outline-none focus:ring-2 focus:ring-[#0B5FFF] focus:ring-offset-2 focus:ring-offset-black"
             >
               Volver al inicio
             </button>
@@ -176,7 +178,7 @@ function OrdenForm() {
       <div className="mx-auto w-full max-w-4xl px-4 pt-28 pb-40 md:pb-24 lg:pt-32">
         <BlurPanel className="mb-6 w-full rounded-3xl border border-white/10 bg-white/5 px-5 py-6 text-white shadow-2xl md:mb-10 md:px-6">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/80">
+            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/90 backdrop-blur-sm">
               Paso {currentStep} de {STEPS.length}
             </span>
             <span className="text-xs font-medium text-white/70 md:hidden">{stepInfo.name}</span>
@@ -201,9 +203,9 @@ function OrdenForm() {
                     <div
                       className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
                         isCompleted
-                          ? 'border-emerald-400/80 bg-emerald-400/80 text-slate-900'
+                          ? 'border-[#10B981] bg-[#10B981] text-white'
                           : isActive
-                          ? 'border-blue-400/60 bg-blue-500/80 text-white'
+                          ? 'border-[#0B5FFF] bg-[#0B5FFF] text-white ring-2 ring-[#0B5FFF]/20'
                           : 'border-white/30 bg-white/5 text-white/70'
                       }`}
                     >
@@ -216,7 +218,7 @@ function OrdenForm() {
                     {index < STEPS.length - 1 && (
                       <div
                         className={`hidden h-px flex-1 md:block ${
-                          currentStep > step.id ? 'bg-gradient-to-r from-emerald-400/70 to-blue-500/70' : 'bg-white/20'
+                          currentStep > step.id ? 'bg-gradient-to-r from-[#10B981]/70 to-[#0B5FFF]/70' : 'bg-white/20'
                         }`}
                       />
                     )}
@@ -246,8 +248,8 @@ function OrdenForm() {
                       }}
                       className={`group flex h-full flex-col justify-between rounded-2xl border-2 p-6 text-left transition-all duration-200 ${
                         formData.operation === op.value
-                          ? 'border-emerald-400/70 bg-emerald-400/15 shadow-lg shadow-emerald-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-emerald-400/40 hover:bg-white/10'
+                          ? 'border-[#10B981] bg-[#10B981]/15 shadow-lg shadow-[#10B981]/20 ring-2 ring-[#10B981]/20'
+                          : 'border-white/10 bg-white/5 hover:border-[#0B5FFF]/40 hover:bg-white/10'
                       }`}
                     >
                       <div className="text-4xl text-white transition-transform duration-200 group-hover:scale-105">
@@ -259,7 +261,7 @@ function OrdenForm() {
                       </div>
                       <span
                         className={`mt-4 inline-flex items-center text-xs font-semibold uppercase tracking-wide ${
-                          formData.operation === op.value ? 'text-emerald-300' : 'text-blue-300'
+                          formData.operation === op.value ? 'text-[#10B981]' : 'text-[#0B5FFF]'
                         }`}
                       >
                         Elegir &rarr;
@@ -267,7 +269,7 @@ function OrdenForm() {
                     </button>
                   ))}
                 </div>
-                {errors.operation && <p className="text-sm text-rose-300">{errors.operation.message}</p>}
+                {errors.operation && <p className="text-sm text-[#EF4444]">{errors.operation.message}</p>}
               </div>
             )}
 
@@ -287,8 +289,8 @@ function OrdenForm() {
                       onClick={() => setValue('platform', platform.value)}
                       className={`flex items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all duration-200 ${
                         formData.platform === platform.value
-                          ? 'border-emerald-400/70 bg-emerald-400/15 shadow-lg shadow-emerald-500/15'
-                          : 'border-white/10 bg-white/5 hover:border-blue-400/40 hover:bg-white/10'
+                          ? 'border-[#10B981] bg-[#10B981]/15 shadow-lg shadow-[#10B981]/15 ring-2 ring-[#10B981]/20'
+                          : 'border-white/10 bg-white/5 hover:border-[#0B5FFF]/40 hover:bg-white/10'
                       }`}
                     >
                       <span className="text-2xl text-white">{platform.emoji}</span>
@@ -297,14 +299,14 @@ function OrdenForm() {
                         <p className="text-xs text-white/70 capitalize">{platform.category}</p>
                       </div>
                       {formData.platform === platform.value && (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400/20 text-emerald-200">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#10B981]/20 text-[#10B981]">
                           <Check className="h-4 w-4" />
                         </div>
                       )}
                     </button>
                   ))}
                 </div>
-                {errors.platform && <p className="text-sm text-rose-300">{errors.platform.message}</p>}
+                {errors.platform && <p className="text-sm text-[#EF4444]">{errors.platform.message}</p>}
               </div>
             )}
 
@@ -326,11 +328,11 @@ function OrdenForm() {
                       type="number"
                       step="0.01"
                       {...register('amount')}
-                      className="w-full rounded-2xl border-none bg-transparent py-5 pl-12 pr-4 text-3xl font-semibold text-white focus:outline-none focus:ring-0"
+                      className="w-full rounded-2xl border-none bg-transparent py-5 pl-12 pr-4 text-3xl font-semibold font-tabular text-white focus:outline-none focus:ring-0"
                       placeholder="0.00"
                     />
                   </div>
-                  {errors.amount && <p className="mt-2 text-sm text-rose-300">{errors.amount.message}</p>}
+                  {errors.amount && <p className="mt-2 text-sm text-[#EF4444]">{errors.amount.message}</p>}
                   <p className="mt-3 text-sm text-white/70">Ingresa el monto que deseas {formData.operation}</p>
                 </div>
               </div>
@@ -352,8 +354,8 @@ function OrdenForm() {
                       onClick={() => setValue('details.payment_method', method.value)}
                       className={`group h-full rounded-2xl border-2 p-6 text-left transition-all duration-200 ${
                         formData.details.payment_method === method.value
-                          ? 'border-emerald-400/70 bg-emerald-400/15 shadow-lg shadow-emerald-500/20'
-                          : 'border-white/10 bg-white/5 hover:border-blue-400/40 hover:bg-white/10'
+                          ? 'border-[#10B981] bg-[#10B981]/15 shadow-lg shadow-[#10B981]/20 ring-2 ring-[#10B981]/20'
+                          : 'border-white/10 bg-white/5 hover:border-[#0B5FFF]/40 hover:bg-white/10'
                       }`}
                     >
                       <div className="mb-3 text-4xl transition-transform duration-200 group-hover:scale-110">
@@ -365,7 +367,7 @@ function OrdenForm() {
                   ))}
                 </div>
                 {errors.details?.payment_method && (
-                  <p className="text-sm text-rose-300">{errors.details.payment_method.message}</p>
+                  <p className="text-sm text-[#EF4444]">{errors.details.payment_method.message}</p>
                 )}
 
                 <div>
@@ -374,7 +376,7 @@ function OrdenForm() {
                     type="text"
                     {...register('details.account_info')}
                     placeholder="Usuario de plataforma, cuenta bancaria, etc."
-                    className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-blue-400 focus:outline-none"
+                    className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-[#0B5FFF] focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]/20"
                   />
                 </div>
               </div>
@@ -392,10 +394,10 @@ function OrdenForm() {
                     <input
                       type="text"
                       {...register('name')}
-                      className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-blue-400 focus:outline-none"
+                      className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-[#0B5FFF] focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]/20"
                       placeholder="Juan Pérez"
                     />
-                    {errors.name && <p className="mt-1 text-sm text-rose-300">{errors.name.message}</p>}
+                    {errors.name && <p className="mt-1 text-sm text-[#EF4444]">{errors.name.message}</p>}
                   </div>
 
                   <div>
@@ -403,10 +405,10 @@ function OrdenForm() {
                     <input
                       type="tel"
                       {...register('user_phone')}
-                      className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-blue-400 focus:outline-none"
+                      className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-[#0B5FFF] focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]/20"
                       placeholder="+598 99 123 456"
                     />
-                    {errors.user_phone && <p className="mt-1 text-sm text-rose-300">{errors.user_phone.message}</p>}
+                    {errors.user_phone && <p className="mt-1 text-sm text-[#EF4444]">{errors.user_phone.message}</p>}
                   </div>
 
                   <div>
@@ -414,10 +416,10 @@ function OrdenForm() {
                     <input
                       type="email"
                       {...register('details.email')}
-                      className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-blue-400 focus:outline-none"
+                      className="w-full rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-[#0B5FFF] focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]/20"
                       placeholder="tu@email.com"
                     />
-                    {errors.details?.email && <p className="mt-1 text-sm text-rose-300">{errors.details.email.message}</p>}
+                    {errors.details?.email && <p className="mt-1 text-sm text-[#EF4444]">{errors.details.email.message}</p>}
                   </div>
 
                   <div>
@@ -425,7 +427,7 @@ function OrdenForm() {
                     <textarea
                       {...register('details.notes')}
                       rows={3}
-                      className="w-full resize-none rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-blue-400 focus:outline-none"
+                      className="w-full resize-none rounded-2xl border-2 border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 focus:border-[#0B5FFF] focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]/20"
                       placeholder="Información adicional sobre tu pedido..."
                     />
                   </div>
@@ -451,7 +453,7 @@ function OrdenForm() {
                     </div>
                     <div>
                       <p className="text-sm text-white/60">Monto</p>
-                      <p className="text-xl font-semibold text-emerald-300">${formData.amount} USD</p>
+                      <p className="text-xl font-semibold font-tabular text-[#10B981]">${formData.amount} USD</p>
                     </div>
                     <div>
                       <p className="text-sm text-white/60">Método de pago</p>
@@ -488,7 +490,7 @@ function OrdenForm() {
               type="button"
               onClick={prevStep}
               disabled={currentStep === 1}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-6 py-3 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ChevronLeft className="h-5 w-5" />
               Anterior
@@ -498,7 +500,7 @@ function OrdenForm() {
               <button
                 type="button"
                 onClick={nextStep}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-transform hover:-translate-y-0.5"
+                className="flex items-center justify-center gap-2 rounded-2xl bg-[#0B5FFF] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#0B5FFF]/30 transition-all hover:bg-[#0B5FFF]/90 focus:outline-none focus:ring-2 focus:ring-[#0B5FFF] focus:ring-offset-2 focus:ring-offset-black"
               >
                 Siguiente
                 <ChevronRight className="h-5 w-5" />
@@ -507,7 +509,7 @@ function OrdenForm() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex items-center justify-center gap-2 rounded-2xl bg-[#10B981] px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-[#10B981]/30 transition-all hover:bg-[#10B981]/90 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:ring-offset-2 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -530,7 +532,7 @@ function OrdenForm() {
                 type="button"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Atrás
@@ -539,7 +541,7 @@ function OrdenForm() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-transform hover:-translate-y-0.5"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0B5FFF] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#0B5FFF]/30 transition-all hover:bg-[#0B5FFF]/90 focus:outline-none focus:ring-2 focus:ring-[#0B5FFF]"
                 >
                   Siguiente
                   <ChevronRight className="h-4 w-4" />
@@ -548,7 +550,7 @@ function OrdenForm() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#10B981] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#10B981]/30 transition-all hover:bg-[#10B981]/90 focus:outline-none focus:ring-2 focus:ring-[#10B981] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
